@@ -27,7 +27,10 @@ class Init {
 
   public function __construct() {
     add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
-    add_filter( 'woocommerce_pos_locate_template', array( $this, 'custom_payment_template' ), 10, 2 );
+
+    // init the AntsRoute integration
+    include_once 'includes/antsroute.php';
+    new AntsRoute_Checkout();
   }
 
   /**
@@ -41,15 +44,7 @@ class Init {
     }
   }
 
-  /**
-   * Load custom payment template for AntsRoute
-   */
-  public function custom_payment_template( $template, $template_name ) {
-    if ( 'payment.php' === $template_name ) {
-      $template = plugin_dir_path( __FILE__ ) . 'templates/payment.php';
-    }
-    return $template;
-  }
+
 }
 
 // Initialize the plugin

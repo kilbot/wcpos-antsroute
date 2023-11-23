@@ -5,13 +5,12 @@
  * This template can be overridden by copying it to yourtheme/woocommerce-pos/payment.php.
  * HOWEVER, this is not recommended , don't be surprised if your POS breaks
  */
-
-\defined( 'ABSPATH' ) || exit;
+\defined('ABSPATH') || exit;
 ?>
 <!doctype html>
 <html <?php language_attributes(); ?>>
 <head>
-	<meta charset="<?php bloginfo( 'charset' ); ?>"/>
+	<meta charset="<?php bloginfo('charset'); ?>"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<?php wp_head(); ?>
 	<style>
@@ -265,21 +264,21 @@
 
 <body <?php body_class(); ?>>
 <div class="woocommerce"><?php
-	global $wp_styles, $wp_scripts;
-$styleHandles  = $wp_styles->queue;
+    global $wp_styles, $wp_scripts;
+$styleHandles = $wp_styles->queue;
 $scriptHandles = $wp_scripts->queue;
 
 $style_exclude_list = apply_filters(
-	'woocommerce_pos_payment_template_dequeue_style_handles',
-	woocommerce_pos_get_settings( 'checkout', 'dequeue_style_handles' )
+    'woocommerce_pos_payment_template_dequeue_style_handles',
+    woocommerce_pos_get_settings('checkout', 'dequeue_style_handles')
 );
 
 $script_exclude_list = apply_filters(
-	'woocommerce_pos_payment_template_dequeue_script_handles',
-	woocommerce_pos_get_settings( 'checkout', 'dequeue_script_handles' )
+    'woocommerce_pos_payment_template_dequeue_script_handles',
+    woocommerce_pos_get_settings('checkout', 'dequeue_script_handles')
 );
 
-$mergedStyleHandles  = array_unique(array_merge($styleHandles, $style_exclude_list));
+$mergedStyleHandles = array_unique(array_merge($styleHandles, $style_exclude_list));
 $mergedScriptHandles = array_unique(array_merge($scriptHandles, $script_exclude_list));
 ?>
 
@@ -293,8 +292,8 @@ $mergedScriptHandles = array_unique(array_merge($scriptHandles, $script_exclude_
 				<div>
 					<h3><?php _e('Styles', 'woocommerce-pos'); ?></h3>
             <?php foreach ($mergedStyleHandles as $handle) {
-            	$checked = ! \in_array($handle, $style_exclude_list, true) ? 'checked' : '';
-            	?>
+                $checked = !\in_array($handle, $style_exclude_list, true) ? 'checked' : '';
+                ?>
 							<input type="checkbox" id="<?php echo $handle; ?>" name="styles[]" value="<?php echo $handle; ?>" <?php echo $checked; ?>>
 							<label for="<?php echo $handle; ?>"><?php echo $handle; ?></label>
 							<input type="hidden" name="all_styles[]" value="<?php echo $handle; ?>"><br>
@@ -303,8 +302,8 @@ $mergedScriptHandles = array_unique(array_merge($scriptHandles, $script_exclude_
 				<div>
 					<h3><?php _e('Scripts', 'woocommerce-pos'); ?></h3>
             <?php foreach ($mergedScriptHandles as $handle) {
-            	$checked = ! \in_array($handle, $script_exclude_list, true) ? 'checked' : '';
-            	?>
+                $checked = !\in_array($handle, $script_exclude_list, true) ? 'checked' : '';
+                ?>
 							<input type="checkbox" id="<?php echo $handle; ?>" name="scripts[]" value="<?php echo $handle; ?>" <?php echo $checked; ?>>
 							<label for="<?php echo $handle; ?>"><?php echo $handle; ?></label>
 							<input type="hidden" name="all_scripts[]" value="<?php echo $handle; ?>"><br>
@@ -320,14 +319,14 @@ $mergedScriptHandles = array_unique(array_merge($scriptHandles, $script_exclude_
 	<?php woocommerce_output_all_notices(); ?>
 
 	<div class="cashier">
-		<span><?php esc_html_e( 'Cashier: ', 'woocommerce-pos' ); ?></span>
-		<span class="cashier-name"><?php echo esc_html( $cashier->display_name ); ?></span>
+		<span><?php esc_html_e('Cashier: ', 'woocommerce-pos'); ?></span>
+		<span class="cashier-name"><?php echo esc_html($cashier->display_name); ?></span>
 	</div>
 
 	<div class="current-user">
-		<span><?php esc_html_e( 'Paying as customer: ', 'woocommerce-pos' ); ?></span>
+		<span><?php esc_html_e('Paying as customer: ', 'woocommerce-pos'); ?></span>
 		<?php $woocommerce_pos_customer = wp_get_current_user(); ?>
-		<span class="user-name"><?php echo 0 === $woocommerce_pos_customer->ID ? esc_html__( 'Guest', 'woocommerce-pos' ) : esc_html( $woocommerce_pos_customer->display_name ); ?></span>
+		<span class="user-name"><?php echo 0 === $woocommerce_pos_customer->ID ? esc_html__('Guest', 'woocommerce-pos') : esc_html($woocommerce_pos_customer->display_name); ?></span>
 	</div>
 
 	<div class="address-fields" style="display: none;">
@@ -337,29 +336,29 @@ $mergedScriptHandles = array_unique(array_merge($scriptHandles, $script_exclude_
 				<div class="woocommerce-column woocommerce-column--1 woocommerce-column--billing-address col-1">
 
 
-					<h2 class="woocommerce-column__title"><?php esc_html_e( 'Billing address', 'woocommerce' ); ?></h2>
+					<h2 class="woocommerce-column__title"><?php esc_html_e('Billing address', 'woocommerce'); ?></h2>
 
 					<address>
-						<?php echo wp_kses_post( $order->get_formatted_billing_address( esc_html__( 'N/A', 'woocommerce' ) ) ); ?>
+						<?php echo wp_kses_post($order->get_formatted_billing_address(esc_html__('N/A', 'woocommerce'))); ?>
 
-						<?php if ( $order->get_billing_phone() ) { ?>
-							<p class="woocommerce-customer-details--phone"><?php echo esc_html( $order->get_billing_phone() ); ?></p>
+						<?php if ($order->get_billing_phone()) { ?>
+							<p class="woocommerce-customer-details--phone"><?php echo esc_html($order->get_billing_phone()); ?></p>
 						<?php } ?>
 
-						<?php if ( $order->get_billing_email() ) { ?>
-							<p class="woocommerce-customer-details--email"><?php echo esc_html( $order->get_billing_email() ); ?></p>
+						<?php if ($order->get_billing_email()) { ?>
+							<p class="woocommerce-customer-details--email"><?php echo esc_html($order->get_billing_email()); ?></p>
 						<?php } ?>
 					</address>
 
 				</div><!-- /.col-1 -->
 
 				<div class="woocommerce-column woocommerce-column--2 woocommerce-column--shipping-address col-2">
-					<h2 class="woocommerce-column__title"><?php esc_html_e( 'Shipping address', 'woocommerce' ); ?></h2>
+					<h2 class="woocommerce-column__title"><?php esc_html_e('Shipping address', 'woocommerce'); ?></h2>
 					<address>
-						<?php echo wp_kses_post( $order->get_formatted_shipping_address( esc_html__( 'N/A', 'woocommerce' ) ) ); ?>
+						<?php echo wp_kses_post($order->get_formatted_shipping_address(esc_html__('N/A', 'woocommerce'))); ?>
 
-						<?php if ( $order->get_shipping_phone() ) { ?>
-							<p class="woocommerce-customer-details--phone"><?php echo esc_html( $order->get_shipping_phone() ); ?></p>
+						<?php if ($order->get_shipping_phone()) { ?>
+							<p class="woocommerce-customer-details--phone"><?php echo esc_html($order->get_shipping_phone()); ?></p>
 						<?php } ?>
 					</address>
 				</div><!-- /.col-2 -->
@@ -368,7 +367,7 @@ $mergedScriptHandles = array_unique(array_merge($scriptHandles, $script_exclude_
 
 
 
-			<?php do_action( 'woocommerce_order_details_after_customer_details', $order ); ?>
+			<?php do_action('woocommerce_order_details_after_customer_details', $order); ?>
 
 		</section>
 	</div>
@@ -376,35 +375,75 @@ $mergedScriptHandles = array_unique(array_merge($scriptHandles, $script_exclude_
 	<div class="coupons">
 		<form method="post" action="">
 			<input type="hidden" name="pos_coupon_nonce" value="<?php echo $coupon_nonce; ?>" />
-			<input type="text" name="pos_coupon_code" class="input-text" placeholder="<?php esc_attr_e( 'Coupon code', 'woocommerce' ); ?>" id="pos_coupon_code" value="" />
-			<button type="submit" class="button" name="pos_apply_coupon" value="<?php esc_attr_e( 'Apply coupon', 'woocommerce' ); ?>">
-				<?php esc_html_e( 'Apply coupon', 'woocommerce' ); ?>
+			<input type="text" name="pos_coupon_code" class="input-text" placeholder="<?php esc_attr_e('Coupon code', 'woocommerce'); ?>" id="pos_coupon_code" value="" />
+			<button type="submit" class="button" name="pos_apply_coupon" value="<?php esc_attr_e('Apply coupon', 'woocommerce'); ?>">
+				<?php esc_html_e('Apply coupon', 'woocommerce'); ?>
 			</button>
 
 			<?php
-			$coupons = $order->get_items( 'coupon' );
-if ( $coupons ) {
-	echo '<h3>' . __('Applied coupons', 'woocommerce') . '</h3>';
-	echo '<ul>';
-	foreach ( $coupons as $coupon ) {
-		echo '<li>' . esc_html( $coupon->get_code() ) . ' <button type="submit" class="button" name="pos_remove_coupon" value="' . esc_attr( $coupon->get_code() ) . '">' . esc_html__( 'Remove', 'woocommerce' ) . '</button></li>';
-	}
-	echo '</ul>';
+            $coupons = $order->get_items('coupon');
+if ($coupons) {
+    echo '<h3>'.__('Applied coupons', 'woocommerce').'</h3>';
+    echo '<ul>';
+    foreach ($coupons as $coupon) {
+        echo '<li>'.esc_html($coupon->get_code()).' <button type="submit" class="button" name="pos_remove_coupon" value="'.esc_attr($coupon->get_code()).'">'.esc_html__('Remove', 'woocommerce').'</button></li>';
+    }
+    echo '</ul>';
 }
 ?>
 		</form>
 	</div>
 
-  <?php 
-    $class = new \Lpac_DPS\Views\Frontend\CheckoutPage();
-    $class->add_checkout_fields();
-  ?>
+	<?php
+/**
+ * Add shipping toggle
+ */
+try {
+	$shipping_methods = WC()->shipping->get_packages()[0]['rates'];
+	$chosen_method = $order->get_shipping_method();
 
-  <!-- <input type="hidden" name="lpac_dps_order_type" id="lpac_dps_order_type" value="delivery">
-  <input class="input-text flatpickr-input" name="lpac_dps_delivery_date" id="lpac_dps_delivery_date" placeholder="" value="">
-  <input class="input-text" name="lpac_dps_delivery_time" id="lpac_dps_delivery_time" placeholder="" value="07:00-17:00"> -->
+	echo '<form id="shipping_method_form" method="post" action="">';
+	foreach ($shipping_methods as $method_id => $method) {
+			$method_label = $method->get_label();
+			$is_selected = strpos($chosen_method, $method_label) !== false;
+			$checked = $is_selected ? 'checked' : '';
 
-	<?php wc_get_template( 'checkout/form-pay.php', array( 'order' => $order, 'available_gateways' => $available_gateways, 'order_button_text' => $order_button_text ) ); ?>
+			echo '<div class="shipping-method">';
+			echo '<input type="radio" name="shipping_method" value="' . esc_attr($method_id) . '" ' . $checked . '>';
+			echo '<label>' . esc_html($method_label) . '</label>';
+			echo '</div>';
+	}
+	echo '</form>';
+} catch (Exception $e) {
+	// Handle the exception
+	echo 'Error: ' . $e->getMessage();
+}
+
+/**
+ * Add delivery date and time fields to checkout
+ */
+try {
+		// Check if the class exists
+		if (class_exists('WC_AntsRoute_Checkout')) {
+				// Call the static method init to get the instance
+				$antsRouteCheckout = \WC_AntsRoute_Checkout::init();
+
+				// Call the instance method display_checkout_fields
+				if (method_exists($antsRouteCheckout, 'display_checkout_fields')) {
+						$antsRouteCheckout->display_checkout_fields();
+				} else {
+						throw new Exception('Method display_checkout_fields does not exist in WC_AntsRoute_Checkout');
+				}
+		} else {
+				throw new Exception('Class WC_AntsRoute_Checkout does not exist');
+		}
+} catch (\Exception $e) {
+		// Handle exception
+		echo 'Caught exception: ',  $e->getMessage(), "\n";
+}
+?>
+
+	<?php wc_get_template('checkout/form-pay.php', ['order' => $order, 'available_gateways' => $available_gateways, 'order_button_text' => $order_button_text]); ?>
 
 </div>
 
@@ -422,6 +461,18 @@ if ( $coupons ) {
 			form.style.display = form.style.display === 'none' ? 'block' : 'none';
 		});
 	});
+
+	// switch shipping method
+	document.addEventListener('DOMContentLoaded', function() {
+		var shippingMethodForm = document.getElementById('shipping_method_form');
+		var shippingMethodRadios = document.querySelectorAll('input[name="shipping_method"]');
+
+				shippingMethodRadios.forEach(function(radio) {
+						radio.addEventListener('change', function() {
+								shippingMethodForm.submit();
+						});
+				});
+		});
 </script>
 
 </body>
