@@ -9,7 +9,8 @@ class AntsRoute_Checkout {
 
   public function __construct() {
     add_filter( 'woocommerce_pos_locate_template', array( $this, 'custom_payment_template' ), 10, 2 );
-    // add_action( 'woocommerce_pos_before_pay', array( $this, 'calculate_shipping' ) );
+    add_action( 'woocommerce_pay_order_before_payment', array( $this, 'add_order_delivery_fields' ) );
+    add_action( 'woocommerce_before_pay_action', array( $this, 'add_order_delivery_info' ) );
   }
 
   /**
@@ -92,6 +93,50 @@ class AntsRoute_Checkout {
         $order->add_item($item);
         $order->calculate_totals();
         $order->save();
+      }
+    } catch ( \Exception $e ) {
+      echo 'Error: ' . $e->getMessage();
+    }
+  }
+
+  /**
+   * Add order delivery fields
+   */
+  public function add_order_delivery_fields( $order ) {
+    try {
+      // Check if the class exists
+      if (class_exists('WC_AntsRoute_Checkout')) {
+          // Call the static method init to get the instance
+          $antsRouteCheckout = \WC_AntsRoute_Checkout::init();
+  
+          // Call the instance method display_checkout_fields
+          if (method_exists($antsRouteCheckout, 'display_checkout_fields')) {
+              $antsRouteCheckout->display_checkout_fields();
+          } else {
+              throw new \Exception('Method display_checkout_fields does not exist in WC_AntsRoute_Checkout');
+          }
+      } else {
+          throw new \Exception('Class WC_AntsRoute_Checkout does not exist');
+      }
+    } catch (\Exception $e) {
+        // Handle exception
+        echo 'Caught exception: ',  $e->getMessage(), "\n";
+    }
+  }
+
+  /**
+   * Add order delivery info
+   */
+  public function add_order_delivery_info( $order ) {
+    try {
+      if (class_exists('WC_AntsRoute_Checkout')) {
+        $antsRouteCheckout = \WC_AntsRoute_Checkout::init();
+        // Call the instance method display_checkout_fields
+          if (method_exists($antsRouteCheckout, 'add_order_delivery_info')) {
+            $antsRouteCheckout->add_order_delivery_info( $order->get_id() );
+        } else {
+            throw new \Exception('Method display_checkout_fields does not exist in WC_AntsRoute_Checkout');
+        }
       }
     } catch ( \Exception $e ) {
       echo 'Error: ' . $e->getMessage();

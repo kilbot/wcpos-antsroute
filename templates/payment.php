@@ -419,28 +419,6 @@ try {
 	echo 'Error: ' . $e->getMessage();
 }
 
-/**
- * Add delivery date and time fields to checkout
- */
-try {
-		// Check if the class exists
-		if (class_exists('WC_AntsRoute_Checkout')) {
-				// Call the static method init to get the instance
-				$antsRouteCheckout = \WC_AntsRoute_Checkout::init();
-
-				// Call the instance method display_checkout_fields
-				if (method_exists($antsRouteCheckout, 'display_checkout_fields')) {
-						$antsRouteCheckout->display_checkout_fields();
-				} else {
-						throw new Exception('Method display_checkout_fields does not exist in WC_AntsRoute_Checkout');
-				}
-		} else {
-				throw new Exception('Class WC_AntsRoute_Checkout does not exist');
-		}
-} catch (\Exception $e) {
-		// Handle exception
-		echo 'Caught exception: ',  $e->getMessage(), "\n";
-}
 ?>
 
 	<?php wc_get_template('checkout/form-pay.php', ['order' => $order, 'available_gateways' => $available_gateways, 'order_button_text' => $order_button_text]); ?>
