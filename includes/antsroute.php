@@ -124,15 +124,22 @@ class AntsRoute_Checkout {
 	 * Add order delivery fields.
 	 */
 	public function add_order_delivery_fields() {
-		try {
-			// Check if AntsRoute configured for the shipping method
-			$order_id = get_query_var( 'order-pay' );
-			$order    = wc_get_order( $order_id );
+		// Check if AntsRoute configured for the shipping method
+		$order_id           = get_query_var( 'order-pay' );
+		$order              = wc_get_order( $order_id );
+		$shipping_method_id = '';
 
-			if ( ! \WC_AntsRoute_Config::method_is_configured( \WC_AntsRoute_Config::activate_mode(), $order->get_meta( '_shipping_method_id' ) ) ) {
-				return;
+		if ( $order ) {
+			foreach ( $order->get_items( 'shipping' ) as $item_id => $item ) {
+				$shipping_method_id = $item->get_method_id();
 			}
+		}
 
+		if ( 'local_pickup' === $shipping_method_id ) {
+			return;
+		}
+
+		try {
 			// Check if the class exists
 			if ( class_exists( 'WC_AntsRoute_Checkout' ) ) {
 				// Call the static method init to get the instance
