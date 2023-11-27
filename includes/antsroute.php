@@ -129,7 +129,7 @@ class AntsRoute_Checkout {
 			$order_id = get_query_var( 'order-pay' );
 			$order    = wc_get_order( $order_id );
 
-			if ( ! \WC_AntsRoute_Config::method_is_configured( \WC_AntsRoute_Config::activate_mode(), $order->get_meta( '_shipping_method_id' ); ) ) {
+			if ( ! \WC_AntsRoute_Config::method_is_configured( \WC_AntsRoute_Config::activate_mode(), $order->get_meta( '_shipping_method_id' ) ) ) {
 				return;
 			}
 
