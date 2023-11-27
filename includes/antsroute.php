@@ -81,14 +81,37 @@ class AntsRoute_Checkout {
 					$order->remove_item( $item_id );
 				}
 
-				// Add the chosen shipping method
-				$item = new \WC_Order_Item_Shipping();
-				$item->set_method_title( $chosen_method->get_label() );
-				$item->set_method_id( $chosen_method->get_id() );
-				$item->set_total( $chosen_method->get_cost() );
+				// Do sanity check for shipping address
+				if ( ! $order->has_shipping_address() ) {
+					$local_pickup = false;
 
-				// Add shipping item to the order
-				$order->add_item( $item );
+					// check if 'local_pickup' is a valid shipping method
+					foreach ( $shipping_methods as $method_id => $method ) {
+						if ( strpos( $method->get_method_id(), 'local_pickup' ) !== false ) {
+								$local_pickup = $method;
+								break;
+						}
+					}
+
+					// Alert the user to let them know that they need to enter a shipping address
+					if ( isset( $_POST['shipping_method'] ) && $_POST['shipping_method'] !== 'local_pickup' ) {
+						\wc_add_notice( 'Customer has no shipping address', 'error' );
+					}
+
+					// If 'local_pickup' is a valid shipping method, use it
+					$chosen_method = $local_pickup ? $local_pickup : null;
+				}
+
+				// Add the chosen shipping method
+				if ( $chosen_method ) {
+					$item = new \WC_Order_Item_Shipping();
+					$item->set_method_title( $chosen_method->get_label() );
+					$item->set_method_id( $chosen_method->get_id() );
+					$item->set_total( $chosen_method->get_cost() );
+					$order->add_item( $item );
+				}
+
+				// Recalculate and save the order totals
 				$order->calculate_totals();
 				$order->save();
 			}
@@ -102,6 +125,14 @@ class AntsRoute_Checkout {
 	 */
 	public function add_order_delivery_fields() {
 		try {
+			// Check if AntsRoute configured for the shipping method
+			$order_id = get_query_var( 'order-pay' );
+			$order    = wc_get_order( $order_id );
+
+			if ( ! \WC_AntsRoute_Config::method_is_configured( \WC_AntsRoute_Config::activate_mode(), $order->get_meta( '_shipping_method_id' ); ) ) {
+				return;
+			}
+
 			// Check if the class exists
 			if ( class_exists( 'WC_AntsRoute_Checkout' ) ) {
 				// Call the static method init to get the instance
