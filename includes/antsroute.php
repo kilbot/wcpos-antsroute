@@ -76,11 +76,6 @@ class AntsRoute_Checkout {
 					}
 				}
 
-				// Clear existing shipping methods
-				foreach ( $order->get_items( 'shipping' ) as $item_id => $item ) {
-					$order->remove_item( $item_id );
-				}
-
 				// Do sanity check for shipping address
 				if ( ! $order->has_shipping_address() ) {
 					$local_pickup = false;
@@ -104,11 +99,29 @@ class AntsRoute_Checkout {
 
 				// Add the chosen shipping method
 				if ( $chosen_method ) {
-					$item = new \WC_Order_Item_Shipping();
-					$item->set_method_title( $chosen_method->get_label() );
-					$item->set_method_id( $chosen_method->get_id() );
-					$item->set_total( $chosen_method->get_cost() );
-					$order->add_item( $item );
+					$found = false;
+
+					// Loop through existing shipping items
+					foreach ( $order->get_items( 'shipping' ) as $item_id => $item ) {
+						if ( $item->get_method_id() === $chosen_method->get_id() ) {
+								// Update the total if this shipping method already exists
+								$item->set_total( $chosen_method->get_cost() );
+								$order->calculate_totals();
+								$found = true;
+						} else {
+								// Remove other shipping methods
+								$order->remove_item( $item_id );
+						}
+					}
+
+					// Add the chosen method if it wasn't found
+					if ( ! $found ) {
+							$item = new \WC_Order_Item_Shipping();
+							$item->set_method_title( $chosen_method->get_label() );
+							$item->set_method_id( $chosen_method->get_id() );
+							$item->set_total( $chosen_method->get_cost() );
+							$order->add_item( $item );
+					}
 				}
 
 				// Recalculate and save the order totals
