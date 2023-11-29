@@ -8,6 +8,7 @@ class AntsRoute_Checkout {
 		add_filter( 'woocommerce_pos_locate_template', array( $this, 'custom_payment_template' ), 10, 2 );
 		add_action( 'woocommerce_pay_order_before_payment', array( $this, 'add_order_delivery_fields' ) );
 		add_action( 'woocommerce_before_pay_action', array( $this, 'add_order_delivery_info' ) );
+		add_action( 'wp_ajax_wc_antsroute_get_slots_on_date', array( $this, 'get_slots_on_date' ), 1 );
 	}
 
 	/**
@@ -103,7 +104,7 @@ class AntsRoute_Checkout {
 
 					// Loop through existing shipping items
 					foreach ( $order->get_items( 'shipping' ) as $item_id => $item ) {
-						if ( $item->get_method_id() === $chosen_method->get_id() ) {
+						if ( $item->get_method_id() === $chosen_method->get_method_id() ) {
 								// Update the total if this shipping method already exists
 								$item->set_total( $chosen_method->get_cost() );
 								$order->calculate_totals();
@@ -122,6 +123,10 @@ class AntsRoute_Checkout {
 							$item->set_total( $chosen_method->get_cost() );
 							$order->add_item( $item );
 					}
+
+					// set the chosen shipping method to the session, needed by AntsRoute later
+					WC()->session->set( 'chosen_shipping_methods', null );
+					WC()->session->set( 'chosen_shipping_methods', array( $chosen_method->get_id() ) );
 				}
 
 				// Recalculate and save the order totals
@@ -192,5 +197,100 @@ class AntsRoute_Checkout {
 		} catch ( \Exception $e ) {
 			echo 'Error: ' . $e->getMessage();
 		}
+	}
+
+	/**
+	 *
+	 */
+	public function get_slots_on_date() {
+		// check if pos
+		$referer        = wp_get_referer();
+		$url_components = parse_url( $referer );
+		$path           = $url_components['path'];
+		if ( strpos( $path, 'wcpos-checkout/order-pay' ) === false ) {
+			return;
+		}
+
+		$path_segments = explode( '/', trim( $path, '/' ) );
+		$order_id      = end( $path_segments );
+
+		$response = array(
+			'success'     => false,
+			'reservation' => false,
+		);
+
+		$posted_data = wp_unslash( $_POST );
+		if ( empty( $posted_data['date'] ) ) {
+			wp_send_json( $response );
+		}
+
+		$checkout_data = $posted_data['checkout'];
+		if ( empty( $checkout_data ) ) {
+			wp_send_json_error(
+				array(
+					'message' => esc_html__( 'Invalid Billing details.', 'wc-antsroute' ),
+				)
+			);
+		}
+		$_POST['order_id']       = $order_id;
+		$_POST['force_order_id'] = 'yes';
+		if ( empty( $order_id ) ) {
+			wp_send_json_error(
+				array(
+					'message' => esc_html__( 'Invalid order id.', 'wc-antsroute' ),
+				)
+			);
+		}
+		// if ( ! \WC_AntsRoute_Config::is_admin_page() ) {
+		// wp_send_json_error(
+		// array(
+		// 'message' => esc_html__( 'Invalid Request.', 'wc-antsroute' ),
+		// )
+		// );
+		// }
+		$posted_date = $posted_data['date'];
+		$mode_case   = \WC_AntsRoute_Config::mode_case( $order_id );
+		/**
+		 * Case 1 & 2
+		 */
+		$token  = \WC_AntsRoute_Config::get_config( 'api_key', $order_id );
+		$substr = strtolower( substr( $token, 0, 10 ) );
+		if ( \WC_AntsRoute::AVAILABILITY_CASE === $mode_case ) {
+
+			$external_id                        = $substr . '-' . $checkout_data['customer_user'];
+			$checkout_data['different_address'] = 1;
+			$customer                           = \WC_AntsRoute_Cart::build_customer_data( $checkout_data, true, $external_id );
+			$user_id                            = $customer['externalId'];
+			$body['customer']                   = $customer;
+			$antsroute_api                      = new \WC_AntsRoute_Api( $token, \WC_AntsRoute_Api::AVAILABILITY_SEARCH, $body, $mode_case, $order_id );
+			/**
+			 * Delete UnReserved/ Unconfirmed Availabilities
+			 */
+			$antsroute_api->remove_availabilities( $user_id );
+			/**
+			 * Case 1 Enable availability check: See availabilities
+			 */
+			$response['html']    = \WC_AntsRoute_TimeSlot::see_availabilities_btn( $posted_date );
+			$response['success'] = true;
+		}
+		/**
+		 * Case 2 Disable availability check: Customer is king
+		 */
+		if ( \WC_AntsRoute::CUSTOMER_KING_CASE === $mode_case || \WC_AntsRoute::SHOPOWNER_KING_CASE === $mode_case ) {
+			$posted_date    = filter_input( INPUT_POST, 'date' );
+			$date_formatted = \WC_AntsRoute_TimeSlot::get_date_formatted( $posted_date );
+			if ( \WC_AntsRoute::SHOPOWNER_KING_CASE === $mode_case ) {
+				$timeslots = \WC_AntsRoute_TimeSlot::get_predefined_time_slots( $posted_date, $order_id );
+			}
+			if ( \WC_AntsRoute::CUSTOMER_KING_CASE === $mode_case ) {
+				$timeslots = \WC_AntsRoute_TimeSlot::get_timeslot_data( $posted_date, $order_id );
+			}
+
+			if ( $timeslots ) {
+				$response['html']    = \WC_AntsRoute_TimeSlot::time_slot_html( $timeslots, $date_formatted ) . \WC_AntsRoute_TimeSlot::confirm_btn();
+				$response['success'] = true;
+			}
+		}
+		wp_send_json( $response );
 	}
 }

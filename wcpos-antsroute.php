@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WooCommerce POS AntsRoute Integration
  * Description: AntsRoute integration for WooCommerce POS (plus mobile phone field added to checkout)
- * Version: 0.0.8
+ * Version: 0.0.9
  * Author: kilbot
  * License: GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
@@ -41,6 +41,8 @@ class Init {
 			// init the mobile phone field for REST API
 			include_once 'includes/mobile-phone-field.php';
 			new Mobile_Phone_Field();
+			include_once 'includes/wwp.php';
+			new WooCommerce_Wholesale_Prices();
 		}
 	}
 }
